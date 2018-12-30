@@ -7,7 +7,7 @@ var express                 =  require('express'),
     bodyParser              = require("body-parser"),
     User                    = require("./models/user");
 
-    mongoose.connect("mongodb://localhost:27017/yelp_camp", {useNewUrlParser: true});
+    mongoose.connect("mongodb://localhost:27017/auth_demo", {useNewUrlParser: true});
     mongoose.set('useFindAndModify', false);
     mongoose.set('useCreateIndex', true);
     app.use(bodyParser.urlencoded({extended: true}));
@@ -24,6 +24,9 @@ var express                 =  require('express'),
     passport.serializeUser(User.serializeUser());
     passport.deserializeUser(User.deserializeUser());
 
+//===================
+//Routes
+
 app.get("/",function(req,res){
     res.render("home");
 })
@@ -31,6 +34,24 @@ app.get("/",function(req,res){
 app.get("/secret",function(req,res){
     res.render("secret");
 })
+
+//Auth Routes
+app.get("/register",function(req,res){
+    res.render("register");
+})
+
+app.post("/register",function(req,res){
+    User.register(new User({username: req.body.username}),req.body.password,function(err,user){
+        if(err){
+            console.log(err);
+            return res.render("register");
+        } else {
+            passport.authenticate("local")(req,res,function(){
+                res.redirect("/secret");
+            })
+        }
+    });
+});
 
 app.listen(8124, "127.0.0.1",function(){
     console.log("Server started");
